@@ -185,62 +185,19 @@ To decide whether we can put (X1 - a thing) in (R1 - a room) and (X2 - a thing) 
 		decide on whether or not the index of R1 < the index of R2;
 	decide on whether or not the index of R1 is not the index of R2.
 
-[TODO: Don't always just pick the first available value.]
-[To decide what number is the successfully set index of (X - a thing):
-	let the index be 0;
-	let L be a list of numbers;
-	repeat with I running from 1 to the number of entries in placed-rooms:
-		add I to L;
-	repeat with I running through L:
-[		showme I;]
-		if entry I in the ages of X is 0:
-			if the index is 0:
-				let OK be true;
-				repeat with X2 running through the list of things constrained by X:
-					let OK-with-X2 be false;
-					let current-index be 0;
-					repeat with I2 running from 1 to the number of entries in placed-rooms:
-						if entry I2 in the ages of X > 0:
-							now current-index is I2;
-							break;
-					repeat with I2 running from 1 to the number of entries in placed-rooms:
-						if ((current-index is I2) or (current-index is 0 and entry I2 in the ages of X2 is 0)) and we can put X in entry I in placed-rooms and X2 in entry I2 in placed-rooms:
-							say "we can put [X] in [entry I in placed-rooms] and [X2] in [entry I2 in placed-rooms] (i2=[i2]; age=[entry I2 in ages of x2]; [ages of x2 in brace notation]).";
-							now OK-with-X2 is true;
-							break;
-					if OK-with-X2 is false:
-						now OK is false;
-						break;
-				if OK is true:
-					now entry I in the ages of X is 1;
-					now the index is I;
-				otherwise:
-					now entry I in the ages of X is -1;
-			otherwise:
-				now entry I in the ages of X is -1;
-	decide on the index.]
-
 To decide what number is the newly assigned index of (X - a thing):
-	let index be 0;
+	let the possible indices be a list of numbers;
 	repeat with I running from 1 to the number of entries in the ages of X:
 		if entry I in the ages of X is 0:
-			if index is 0:
-				now index is I;
-			otherwise:
-				now entry I in the ages of X is -1;
-	decide on index.
+			add I to the possible indices;
+	if the possible indices is empty, decide on 0;
+	let the index be a random number between 1 and the number of entries in the possible indices;
+	repeat with I running from 1 to the number of entries in the ages of X:
+		if I is not the index and I is listed in the possible indices:
+			now entry I in the ages of X is -1;
+	decide on the index.
 
-To age, backwards:
-	repeat with I running from 1 to the number of entries in placed-rooms:
-		repeat with X running through things:
-			let V be entry I in the ages of X;
-			unless V is 0:
-				if backwards:
-					now entry I in the ages of X is V + 1;
-				otherwise:
-					now entry I in the ages of X is V - 1.
-
-To decide whether we remove inconsistent values from (X1 - a thing) given (X2 - a thing):
+[To decide whether we remove inconsistent values from (X1 - a thing) given (X2 - a thing):
 	let removed be false;
 	repeat with I1 running from 1 to the number of entries in placed-rooms:
 		if entry I1 in the ages of X1 is -1, next;
@@ -268,7 +225,7 @@ To run AC-3:
 		if we remove inconsistent values from X1 given X2:
 			repeat with X3 running through things constrained by X1:
 				add X3 to the queue;
-				add X1 to the queue.
+				add X1 to the queue.]
 
 Placed-rooms is a list of rooms that varies.
 When play begins:
@@ -300,48 +257,6 @@ When play begins:
 				repeat with I1 running from 1 to the number of entries in placed-rooms:
 					unless entry I1 in the ages of X1 is 0:
 						decrement entry I1 in the ages of X1;
-
-[When play begins:
-	now placed-rooms is the list of placed rooms;
-	sort placed-rooms in index order;
-	let Q be 30; [TODO: remove this hack]
-	let just-backtracked be false;
-	while there is an unset thing (called X):
-[		if there is an unset door (called XX), now X is XX;]
-		say "[line break][bold type][X][roman type][line break]";
-		say "    [ages of X in brace notation][line break]";
-		if Q < 0, break;
-		decrement Q;
-		age;
-		let I be the newly assigned index of X;
-		if I is 0:
-			while there is at most one unset thing:
-				age, backwards;
-			now just-backtracked is true;
-			next;
-		if just-backtracked is true:
-			now entry I in the ages of X is -1;
-			now I is the newly assigned index of X;
-			now just-backtracked is false;
-[		let worklist be a list of things;
-		add X to worklist;
-		while worklist is non-empty:
-			let X1 be entry 1 in worklist;
-			remove entry 1 from worklist;
-			[ensure that every value V2 of every constrained var X2 can work with X1=V1:]
-			repeat with X2 running through things constrained by X1:
-				repeat with I2 running from 1 to the number of entries in placed-rooms:
-					if entry I2 in the ages of X2 is not 0, next;
-					let OK be false;
-					repeat with I1 running from 1 to the number of entries in placed-rooms:
-						if entry I1 in the ages of X1 is not 0, next;
-						if we can put X1 in entry I1 in placed-rooms and X2 in entry I2 in placed-rooms:
-							now OK is true;
-							break;
-					if OK is false:
-						now entry I2 in the ages of X2 is -1;
-						add X2 to the worklist, if absent;]
-	showme Q;]
 
 When play begins:
 	repeat with X running through things:
