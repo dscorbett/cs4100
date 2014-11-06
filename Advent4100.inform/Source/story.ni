@@ -8,7 +8,8 @@ Use scoring.
 
 Section - Stocks
 
-There are 4 rooms.
+A room can be placeable.
+There are 20 placeable rooms.
 
 A treasure is a kind of thing.
 A treasure has a number called the score. The score of a treasure is usually 5.
@@ -101,7 +102,7 @@ To decide whether the space at (x - number) by (y - number) by (z - number) is f
 Section - The initial room tree
 
 When play begins:
-	while a room (called branch) is unplaced:
+	while there is an unplaced placeable room (called branch):
 [		say line break;]
 [		showme the branch;]
 		let root be a random placed room;
@@ -129,7 +130,7 @@ When play begins:
 [				say "not free.";]
 
 [When play begins:
-	repeat with R running through rooms:
+	repeat with R running through placeable rooms:
 		say "[code of R]: ([x of R],[y of R],[z of R])[line break]";
 		repeat with D running through directions:
 			let R2 be room D from R;
@@ -139,19 +140,18 @@ When play begins:
 Definition: A room is root if it is placed and its precursor is nothing.
 
 When play begins:
-	let L be a list of rooms;
+	let the queue be a list of rooms;
 	let R be a random root room;
-	add R to L;
+	add R to the queue;
 	let N be 1;
-	while L is non-empty:
-		now R is entry 1 of L;
-		remove entry 1 from L;
-		now index of R is N;
-[		say "now the index of [R] is [N].";]
+	while the queue is non-empty:
+		now R is entry 1 of the queue;
+		remove entry 1 from the queue;
+		now the index of R is N;
 		increment N;
 		repeat with R2 running through rooms adjacent to R:
-			if index of R2 is 0:
-				add R2 to L;
+			if the index of R2 is 0:
+				add R2 to the queue.
 
 Section - The constraint satisfaction solver
 
@@ -275,12 +275,46 @@ When play begins:
 		let R be entry current-index in placed-rooms;
 		say "<<[current-index]>>: [R].";
 		if X is a door:
-			let D be the best route from R to (the precursor of R) through rooms;
+			let D be the best route from R to the precursor of R;
 			unless D is nothing:
 				move X to D of R and (the opposite of D) of the precursor of R;
 		otherwise:
 			if X is yourself, say run paragraph on;
 			move X to R, without printing a room description;
+
+Section - Zones
+
+A room has a number called the zone.
+The verb to follow means the precursor property.
+
+When play begins:
+	let the stack be a list of rooms;
+	let the new zone queue be a list of rooms;
+	let R be a random root room;
+	add R to the stack;
+	let the current zone be 1;
+	while the stack is non-empty or the new zone queue is non-empty:
+		if the stack is empty:
+			now R is entry 1 in the new zone queue;
+			remove entry 1 from the new zone queue;
+			increment the current zone;
+		otherwise:
+			now R is entry (number of entries in the stack) in the stack;
+			remove entry (number of entries in the stack) from the stack;
+		now the zone of R is the current zone;
+		repeat with R2 running through rooms following R:
+			if the zone of R2 is 0:
+				let the route be the best route from R to R2, using even locked doors;
+				if door route from R is nothing:
+					add R2 to the stack;
+				otherwise:
+					add R2 to the new zone queue.
+
+[When play begins:
+	let L be the list of placeable rooms;
+	sort L in zone order;
+	repeat with R running through L:
+		say "Zone [zone of R]: [R][line break]"]
 
 Section - Scoring
 
