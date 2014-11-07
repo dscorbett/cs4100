@@ -56,18 +56,12 @@ To decide what number is the code of (O - object):
 	(- {O} -).
 
 To decide what direction is a fun direction:
-	if a random chance of 3 in 4 succeeds:
+	if a random chance of 15 in 16 succeeds:
 		if a random number between 1 and 4 is:
 			-- 1: decide on north;
 			-- 2: decide on east;
 			-- 3: decide on south;
 			-- otherwise: decide on west;
-	if a random chance of 3 in 4 succeeds:
-		if a random number between 1 and 4 is:
-			-- 1: decide on northeast;
-			-- 2: decide on southeast;
-			-- 3: decide on southwest;
-			-- otherwise: decide on northwest;
 	decide on down;
 
 To decide what number is the x (D - direction) of (R - room):
