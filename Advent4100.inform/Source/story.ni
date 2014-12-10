@@ -5,6 +5,11 @@ Include Mobile Doors by David Corbett.
 Use American dialect.
 Use no deprecated features.
 Use scoring.
+Use serial comma.
+
+Section - Not for release (not for release)
+
+Include version 4/140513 of Automap by Mark Tilford.
 
 Section - Stocks
 
@@ -43,11 +48,12 @@ A room has a number called the index.
 
 Section - Auxiliary phrases
 
-The description of a room (called R) is usually "You can go:[exit list].".
+The description of a room is usually "([x of location],[y of location],[z of location]) Zone [zone of location]. You can go [exit list].".
 To say exit list:
+	let L be a list of directions;
 	repeat with D running through directions:
-		let R be the room D from the location;
-		if R is a room, say " [D],";
+		if the room D from the location is a room, add D to L;
+	say L.
 
 Rule for printing the name of a room (called R):
 	say "Room [code of R]";
@@ -65,17 +71,17 @@ To decide what direction is a fun direction:
 	decide on down;
 
 To decide what number is the x (D - direction) of (R - room):
-	if D is north or D is northwest or D is northeast:
+	if D is north:
 		decide on x of R + 1;
-	if D is south or D is southwest or D is southeast:
+	if D is south:
 		decide on x of R - 1;
 	otherwise:
 		decide on x of R;
 
 To decide what number is the y (D - direction) of (R - room):
-	if D is east or D is northeast or D is southeast:
+	if D is east:
 		decide on y of R + 1;
-	if D is west or D is northwest or D is southwest:
+	if D is west:
 		decide on y of R - 1;
 	otherwise:
 		decide on y of R;
@@ -92,6 +98,15 @@ To decide whether the space at (x - number) by (y - number) by (z - number) is f
 	repeat with R running through placed rooms:
 		if x of R is x and y of R is y and z of R is z, no;
 	yes;
+
+To decide what number is the Manhattan distance between (R1 - a room) and (R2 - a room):
+	decide on the absolute value of (x of R1 - x of R2) + the absolute value of (y of R1 - y of R2) + the absolute value of (z of R1 - z of R2).
+
+Section - Absolute value (for Z-Machine only)
+
+To decide what number is the absolute value of (N - a number):
+	if N >= 0, decide on N;
+	decide on 0 - N.
 
 Section - The initial room tree
 
@@ -117,9 +132,9 @@ When play begins:
 				now z of branch is z;
 				now precursor of branch is root;
 				change the D exit of root to branch;
-[				say "[root] -> [D] -> [branch].";]
+				say "[root] -> [D] -> [branch].";
 				change opposite of D exit of branch to root;
-[				say "[branch] -> [opposite of D] -> [root].";]
+				say "[branch] -> [opposite of D] -> [root].";
 [			otherwise:]
 [				say "not free.";]
 
@@ -273,7 +288,8 @@ When play begins:
 			unless D is nothing:
 				move X to D of R and (the opposite of D) of the precursor of R;
 		otherwise:
-			if X is yourself, say run paragraph on;
+			[TODO: Make sure the player starts in the first zone.]
+			if X is yourself, next; [say run paragraph on;]
 			move X to R, without printing a room description;
 
 Section - Zones
@@ -281,36 +297,101 @@ Section - Zones
 A room has a number called the zone.
 The verb to follow means the precursor property.
 
+To decide what direction is the best direction from (R1 - a room) to (R2 - a room):
+	let dx be x of R2 - x of R1;
+	let dy be y of R2 - y of R1;
+	let dz be z of R2 - z of R1;
+	if dz > 0, decide on up;
+	if dz < 0, decide on down;
+	if dx > 0:
+		if dy > 0, decide on northeast;
+		if dy < 0, decide on northwest;
+		decide on north;
+	if dx < 0:
+		if dy > 0, decide on southeast;
+		if dy < 0, decide on southwest;
+		decide on south;
+	if dy > 0, decide on east;
+	decide on west.
+
+To tunnel from (R1 - a room) to (R2 - a room):
+	if R1 is R2 or the best route from R1 to R2, using even locked doors is nothing:
+		stop;
+	let W1 be the best direction from R1 to R2;
+	say "best [R1] -> [R2]: [W1].";
+	if the room W1 from R1 is nothing and the room (opposite of W1) from R2 is nothing:
+		say "change!";
+		change the W1 exit of R1 to R2;
+		change the (opposite of W1) exit of R2 to R1.
+
 When play begins:
-	let the stack be a list of rooms;
-	let the new zone queue be a list of rooms;
-	let R be a random root room;
-	add R to the stack;
-	let the current zone be 1;
-	while the stack is non-empty or the new zone queue is non-empty:
-		if the stack is empty:
-			now R is entry 1 in the new zone queue;
-			remove entry 1 from the new zone queue;
-			increment the current zone;
+	let the current zone stack be a list of rooms;
+	let the current zone list be a list of rooms;
+	let the root queue be the list of root rooms;
+	let the current zone be 0;
+	let R be a room;
+	let N be a number;
+	while the current zone stack is non-empty or the root queue is non-empty or the current zone list is non-empty:
+		if the current zone stack is empty:
+			now N is the number of entries in the current zone list;
+			repeat with I running from 1 to N * 3:
+				tunnel from entry (a random number between 1 and N) in the current zone list to entry (a random number between 1 and N) in the current zone list;
+			if the root queue is non-empty:
+				now the current zone list is {};
+				now R is entry 1 in the root queue;
+				remove entry 1 from the root queue;
+				increment the current zone;
+			otherwise:
+				break;
 		otherwise:
-			now R is entry (number of entries in the stack) in the stack;
-			remove entry (number of entries in the stack) from the stack;
+			now N is the number of entries in the current zone stack;
+			now R is entry N in the current zone stack;
+			remove entry N from the current zone stack;
 		now the zone of R is the current zone;
+		add R to the current zone list;
 		repeat with R2 running through rooms following R:
 			if the zone of R2 is 0:
-				let the route be the best route from R to R2, using even locked doors;
-				if door route from R is nothing:
-					add R2 to the stack;
+				let W be the best route from R to R2, using even locked doors;
+				if the door W from R is nothing:
+					add R2 to the current zone stack;
 				otherwise:
-					add R2 to the new zone queue.
+					add R2 to the root queue.
 
-[When play begins:
+When play begins:
 	let L be the list of placeable rooms;
 	sort L in zone order;
 	repeat with R running through L:
-		say "Zone [zone of R]: [R][line break]"]
+		say "Zone [zone of R]: [R] ([x of R],[y of R],[z of R])[line break]"
+
+Section - Mapping (for use with Automap by Mark Tilford)
+
+Automapping is an action out of world applying to nothing.
+Understand "automap" as automapping.
+Carry out automapping:
+	say "Opening all doors and mapping the dungeon.";
+	reserve automap memory of 13 rows;
+	repeat with D running through doors:
+		now D is unlocked;
+		now D is open;
+	repeat with R running through rooms:
+		explore R.
+
+When play begins:
+	try automapping.
 
 Section - Scoring
 
+When play begins:
+	repeat with X running through treasures:
+		increase the maximum score by the score of X.
+
 Before taking a not handled treasure (called X):
-	increase score by score of X;
+	increase the score by the score of X.
+
+Section - Randomness
+
+Seeding is an action out of world applying to one number.
+Understand "seed the/-- random/random-number/-- number/-- generator/-- with/-- [number]" as seeding.
+Carry out seeding:
+	say "Seeding the random-number generator with [number understood].";
+	seed the random-number generator with the number understood.
