@@ -46,6 +46,8 @@ A room can be placed or unplaced.
 A room has an object called the precursor.
 A room has a number called the index.
 
+A thing can be placeable or unplaceable. A thing is usually placeable.
+
 Section - Auxiliary phrases
 
 The description of a room is usually "([x of location],[y of location],[z of location]) Zone [zone of location]. You can go [exit list].".
@@ -138,16 +140,21 @@ When play begins:
 [			otherwise:]
 [				say "not free.";]
 
-[When play begins:
+True adjacency relates rooms to each other.
+The verb to be truly adjacent to means the true adjacency relation.
+
+When play begins:
 	repeat with R running through placeable rooms:
 		say "[code of R]: ([x of R],[y of R],[z of R])[line break]";
 		repeat with D running through directions:
 			let R2 be room D from R;
 			if R2 is not nothing:
-				say " . [D] -> [code of R2][line break]";]
+				now R is truly adjacent to R2;
+				say " . [D] -> [code of R2][line break]";
 
 Definition: A room is root if it is placed and its precursor is nothing.
 
+[TODO: Does this do anything?]
 When play begins:
 	let the queue be a list of rooms;
 	let R be a random root room;
@@ -167,7 +174,7 @@ Section - The constraint satisfaction solver
 A thing has a list of numbers called the ages.
 When play begins:
 	let N be the number of placed rooms;
-	repeat with X running through things:
+	repeat with X running through placeable things:
 		extend the ages of X to N entries.
 Definition: a thing is unset if it has not been set.
 To decide whether (X - a thing) has not been set:
@@ -250,25 +257,25 @@ When play begins:
 				unless we can put X in entry I in placed-rooms and X1 in entry I1 in placed-rooms or entry I1 in the ages of X1 is not 0:
 					now entry I1 in the ages of X1 is -1;
 		let dead end be false;
-		repeat with X1 running through things:
+		repeat with X1 running through placeable things:
 			if 0 is not listed in the ages of X1:
 				now dead end is true;
 				break;
 		if dead end is true:
-			repeat with X1 running through things:
+			repeat with X1 running through placeable things:
 				repeat with I1 running from 1 to the number of entries in placed-rooms:
 					unless entry I1 in the ages of X1 is 0:
 						increment entry I1 in the ages of X1;
 			now entry I in the ages of X is -1;
 		otherwise:
-			repeat with X1 running through things:
+			repeat with X1 running through placeable things:
 				if X1 is X, next;
 				repeat with I1 running from 1 to the number of entries in placed-rooms:
 					unless entry I1 in the ages of X1 is 0:
 						decrement entry I1 in the ages of X1;
 
 When play begins:
-	repeat with X running through things:
+	repeat with X running through placeable things:
 		say "[X]: ([ages of X in brace notation]) ";
 		let current-index be 0;
 		repeat with I running from 1 to the number of entries in the ages of X:
@@ -290,7 +297,60 @@ When play begins:
 		otherwise:
 			[TODO: Make sure the player starts in the first zone.]
 			if X is yourself, next; [say run paragraph on;]
-			move X to R, without printing a room description;
+			move X to R, without printing a room description.
+
+Section - Attacking
+
+Attacking it with is an action applying to one visible thing and one carried thing.
+Understand "attack [something] with [something]" as attacking it with.
+Check an actor attacking something with:
+	try the actor attacking the noun.
+
+Section - Agents
+
+The dwarf is a man. The description of the dwarf is "This little guy is a reflex agent. If he sees you, he reflexively tries to kill you."
+The dwarf can be hidden. The dwarf is hidden.
+The axe is an unplaceable thing. The axe is nowhere. The description of the axe is "It's just a little axe."
+Every turn:
+[	say "dwarf's turn: dwarf was in [location of dwarf] ([x of location of dwarf],[y of location of dwarf],[z of location of dwarf]).";]
+	if the dwarf is in a room (called R):
+		if R is the location:
+			if the dwarf is hidden:
+				say "A dwarf emerges from the shadows!";
+				now the dwarf is not hidden;
+				stop;
+			otherwise if axe is nowhere:
+				say "The dwarf throws a nasty little axe at you, misses, curses, and runs away.";
+				now the axe is in the location;
+			otherwise:
+				say "The dwarf throws a nasty little knife at you, ";
+				if a random chance of 1 in 3 succeeds:
+					say "and hits!";
+					end the story saying "You have died";
+				otherwise:
+					say "but misses![paragraph break]Shrieking with frustration, the dwarf slips back into the shadows.";
+		now the dwarf is hidden;
+		now the dwarf is in a random room which is truly adjacent to R;
+		if the dwarf is visible:
+			[TODO: "from the down/up"]
+			say "The dwarf arrives from [the best direction from the location to R].";
+			now the dwarf is not hidden.
+[Every turn:
+	say "dwarf's turn: dwarf is now in [location of dwarf] ([x of location of dwarf],[y of location of dwarf],[z of location of dwarf])."]
+Instead of attacking the dwarf:
+	say "Not with your bare hands."
+Instead of attacking the dwarf with the axe:
+	try throwing the axe at the dwarf.
+Instead of throwing the axe at the dwarf:
+	say "You throw the axe at the dwarf and the spinning blade hits with a satisfying squelch! The body vanishes in a cloud of greasy black smoke.";
+	now the axe is in the location;
+	now the dwarf is nowhere.
+Rule for writing a paragraph about the hidden dwarf:
+	now the dwarf is mentioned.
+
+The pirate is a man. The description of the pirate is "He looks like a pirate."
+
+The thief is a man. The description of the thief is "He looks like a thief."
 
 Section - Zones
 
@@ -329,6 +389,14 @@ When play begins:
 	let the current zone list be a list of rooms;
 	let the root queue be the list of root rooms;
 	let the current zone be 0;
+	let the agent list be {yourself};
+	add the list of people to the agent list, if absent;
+	let the agent zone list be a list of numbers;
+	repeat with Z running from 2 to the number of doors:
+		add Z to the agent zone list;
+	sort the agent zone list into random order;
+	add 1 at entry 1 in the agent zone list;
+	truncate the agent zone list to (the number of people) entries;
 	let R be a room;
 	let N be a number;
 	while the current zone stack is non-empty or the root queue is non-empty or the current zone list is non-empty:
@@ -336,6 +404,9 @@ When play begins:
 			now N is the number of entries in the current zone list;
 			repeat with I running from 1 to N * 3:
 				tunnel from entry (a random number between 1 and N) in the current zone list to entry (a random number between 1 and N) in the current zone list;
+			if the agent list is non-empty and N is not 0 and the current zone is listed in the agent zone list:
+				move entry 1 in the agent list to entry (a random number between 1 and N) in the current zone list;
+				remove entry 1 from the agent list;
 			if the root queue is non-empty:
 				now the current zone list is {};
 				now R is entry 1 in the root queue;
@@ -357,11 +428,11 @@ When play begins:
 				otherwise:
 					add R2 to the root queue.
 
-When play begins:
+[When play begins:
 	let L be the list of placeable rooms;
 	sort L in zone order;
 	repeat with R running through L:
-		say "Zone [zone of R]: [R] ([x of R],[y of R],[z of R])[line break]"
+		say "Zone [zone of R]: [R] ([x of R],[y of R],[z of R])[line break]"]
 
 Section - Mapping (for use with Automap by Mark Tilford)
 
