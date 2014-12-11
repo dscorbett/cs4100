@@ -330,10 +330,13 @@ Every turn:
 				otherwise:
 					say "but misses![paragraph break]Shrieking with frustration, the dwarf slips back into the shadows.";
 		now the dwarf is hidden;
-		now the dwarf is in a random room which is truly adjacent to R;
+		if R is truly adjacent to the location and a random chance of 1 in 2 succeeds:
+			now the dwarf is in the location;
+		otherwise:
+			now the dwarf is in a random room which is truly adjacent to R;
 		if the dwarf is visible:
-			[TODO: "from the down/up"]
-			say "The dwarf arrives from [the best direction from the location to R].";
+			let W be the best direction from the location to R;
+			say "The dwarf arrives from [if W is up]above[otherwise if W is down]below[otherwise][the W][end if].";
 			now the dwarf is not hidden.
 [Every turn:
 	say "dwarf's turn: dwarf is now in [location of dwarf] ([x of location of dwarf],[y of location of dwarf],[z of location of dwarf])."]
@@ -347,8 +350,6 @@ Instead of throwing the axe at the dwarf:
 	now the dwarf is nowhere.
 Rule for writing a paragraph about the hidden dwarf:
 	now the dwarf is mentioned.
-
-The pirate is a man. The description of the pirate is "He looks like a pirate."
 
 The thief is a man. The description of the thief is "He looks like a thief."
 
