@@ -632,3 +632,7 @@ When play begins:
 After taking a not handled treasure (called X):
 	increase the score by the score of X;
 	if the score is the maximum score, end the story finally saying "You have won".
+
+Section - Testing
+
+Test me with "debug / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / z / report".
