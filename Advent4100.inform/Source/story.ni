@@ -60,6 +60,9 @@ To say exit list:
 Rule for printing the name of a room (called R):
 	say "Room [code of R]".
 
+Rule for printing the name of a door (called D) while looking:
+	say "[printed name of D] ([if D is locked]locked, [end if]leading [opposite of the direction of D from the location])".
+
 To decide what number is the code of (O - object):
 	(- {O} -).
 
@@ -554,7 +557,6 @@ Understand "automap" as automapping.
 
 Carry out automapping:
 	say "Opening all doors and mapping the dungeon.";
-	reserve automap memory of (the number of placeable rooms * 2 / 3) rows;
 	repeat with D running through doors:
 		now D is unlocked;
 		now D is open;
