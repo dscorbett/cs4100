@@ -524,7 +524,7 @@ When play begins:
 			repeat with I running from 1 to N * 3:
 				tunnel from entry (a random number between 1 and N) in the current zone list to entry (a random number between 1 and N) in the current zone list;
 			if the agent list is non-empty and N is not 0 and the current zone is listed in the agent zone list:
-				move entry 1 in the agent list to entry (a random number between 1 and N) in the current zone list;
+				move entry 1 in the agent list to entry (a random number between 1 and N) in the current zone list, without printing a room description;
 				remove entry 1 from the agent list;
 			if the root queue is non-empty:
 				now the current zone list is {};
