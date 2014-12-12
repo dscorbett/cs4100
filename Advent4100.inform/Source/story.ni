@@ -320,7 +320,13 @@ Every turn:
 				say "The dwarf throws a nasty little knife at you, ";
 				if a random chance of 1 in 3 succeeds:
 					say "and hits!";
-					end the story saying "You have died";
+					if debug mode is false:
+						end the story saying "You have died";
+					otherwise:
+						say "You are engulfed in a cloud of orange smoke. By the time it clears, the dwarf is long gone.";
+						now the death turn is the turn count;
+						now the dwarf is nowhere;
+						stop;
 				otherwise:
 					say "but misses![paragraph break]Shrieking with frustration, the dwarf slips back into the shadows.";
 		now the dwarf is hidden;
@@ -328,9 +334,9 @@ Every turn:
 			now the dwarf is in the location;
 		otherwise:
 			let R1 be a random non-location room which is truly adjacent to R;
-			if the best route from R to R1 is not nothing, now the dwarf is in R;
+			if the best route from R to R1 is not nothing, now the dwarf is in R1;
 		if the dwarf is visible:
-			let W be the best direction from the location to R;
+			let W be the best route from the location to R;
 			say "The dwarf arrives from [if W is up]above[otherwise if W is down]below[otherwise][the W][end if].";
 			now the dwarf is not hidden.
 
@@ -371,7 +377,7 @@ Every turn:
 		if the best next step is a direction:
 			if the archaeologist is visible, say "The archaeologist goes [best next step].";
 			move the archaeologist to the room (best next step) of the location of the archaeologist;
-			if the archaeologist is visible, say "The archaeologist arrives from [if best next step is up]below[otherwise if best next step is down]above[otherwise][the best next step][end if].";
+			if the archaeologist is visible, say "The archaeologist arrives from [if best next step is up]below[otherwise if best next step is down]above[otherwise][the opposite of the best next step][end if].";
 		otherwise if the best next step is a thing:
 			if the archaeologist is visible, say "The archaeologist takes a picture of [the best next step].";
 			now the best next step is photographed.
@@ -411,6 +417,7 @@ To decide what number is alpha-beta (node-locs - list of objects) ' (node-treasu
 To decide what list of lists of lists of objects is the children of (node-locs - list of objects) ' (node-treasures - list of objects) ' (node-carried-keys - list of objects) ' (node-uncarried-keys - list of objects) ' true:
 	let the children be a list of lists of lists of objects;
 	repeat with X running through directions:
+		if entry 1 in node-locs is not a room, next;
 		let RD be the room-or-door X from entry 1 in node-locs;
 		if RD is not nothing and (RD is not a door or (the matching key of RD is not listed in node-carried-keys and the matching key of RD is not listed in node-uncarried-keys)):
 			[go direction]
@@ -465,6 +472,7 @@ To decide what list of lists of lists of objects is the children of (node-locs -
 To decide what list of lists of lists of objects is the children of (node-locs - list of object) ' (node-treasures - list of objects) ' (node-carried-keys - list of objects) ' (node-uncarried-keys - list of objects) ' false:
 	let the children be a list of lists of lists of objects;
 	repeat with D running through directions:
+		if entry 2 in node-locs is not a room, next;
 		let RD be the room-or-door D from entry 2 in node-locs;
 		if RD is not nothing and (RD is not a door or (the matching key of RD is not listed in node-carried-keys and the matching key of RD is not listed in node-uncarried-keys)):
 			[go direction]
@@ -526,11 +534,14 @@ To decide what direction is the best direction from (R1 - a room) to (R2 - a roo
 	if dy > 0, decide on east;
 	decide on west.
 
+The extra tunnel count is a number variable.
+
 To tunnel from (R1 - a room) to (R2 - a room):
 	if R1 is R2 or the best route from R1 to R2, using even locked doors is nothing:
 		stop;
 	let W1 be the best direction from R1 to R2;
 	if the room W1 from R1 is nothing and the room (opposite of W1) from R2 is nothing:
+		increment the extra tunnel count;
 		change the W1 exit of R1 to R2;
 		change the (opposite of W1) exit of R2 to R1.
 
@@ -578,18 +589,39 @@ When play begins:
 				otherwise:
 					add R2 to the root queue.
 
-Section - Mapping
+Section - Debugging and reporting
 
-Automapping is an action out of world applying to nothing.
-Understand "automap" as automapping.
+Debugging is an action out of world applying to nothing.
+Understand "debug" as debugging.
+Understand the commands "automap" and "wizard" as "debug".
 
-Carry out automapping:
-	say "Opening all doors and mapping the dungeon.";
+Debug mode is a truth state variable.
+The death turn is a number variable.
+
+Carry out debugging:
+	if debug mode is true:
+		say "Debug mode is already on." instead;
+	say "Opening all doors...[line break]";
 	repeat with D running through doors:
 		now D is unlocked;
 		now D is open;
+	say "Mapping the dungeon...[line break]";
 	repeat with R running through rooms:
-		explore R.
+		explore R;
+	say "Ready to debug.";
+	now debug mode is true.
+
+Reporting is an action out of world applying to nothing.
+Understand "report" as reporting.
+Understand the command "status" as "report".
+
+Carry out reporting:
+	say "[if debug mode is true]I[otherwise]Not i[end if]n debug mode[line break]";
+	say "Extra tunnels: [extra tunnel count][line break]";
+	let N be the number of photographed treasures;
+	say "Treasures photographed: [N][unless N is 0] ([the list of photographed treasures])[end if][line break]";
+	say "Dwarf status: [if the death turn is not 0]killed the player on turn [the death turn][otherwise if the axe is nowhere]hasn't thrown the axe yet[otherwise]has thrown the axe[end if][line break]";
+	say conditional paragraph break.
 
 Section - Scoring
 
