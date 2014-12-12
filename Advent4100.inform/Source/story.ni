@@ -317,9 +317,9 @@ Instead of throwing the axe at the dwarf:
 Rule for writing a paragraph about the hidden dwarf:
 	now the dwarf is mentioned.
 
-Section - The archeologist
+Section - The archaeologist
 
-The archeologist is a man. The description of the archeologist is "The archeologist carries a camera[if the player carries a treasure]. He looks disapprovingly at the treasure you have looted[end if].".
+The archaeologist is a man. The description of the archaeologist is "The archaeologist carries a camera[if the player carries a treasure]. He looks disapprovingly at the treasure you have looted[end if].".
 
 A treasure can be photographed.
 
@@ -332,17 +332,17 @@ Every turn:
 	now the best next step score is 0;
 	let node-locs be a list of rooms;
 	add the location to node-locs;
-	add the location of the archeologist to node-locs;
+	add the location of the archaeologist to node-locs;
 	let N be alpha-beta node-locs ' the list of not handled not photographed treasures ' the list of carried things which are key-matched by locked doors ' the list of not carried things which are key-matched by locked doors ' the initial depth ' -32768 ' 32767 ' false;
 	if the best next step list is non-empty:
 		sort the best next step list in random order;
 		let the best next step be entry 1 in the best next step list;
 		if the best next step is a direction:
-			if the archeologist is visible, say "The archeologist goes [best next step].";
-			move the archeologist to the room (best next step) of the location of the archeologist;
-			if the archeologist is visible, say "The archeologist arrives from [if best next step is up]below[otherwise if best next step is down]above[otherwise][the best next step][end if].";
+			if the archaeologist is visible, say "The archaeologist goes [best next step].";
+			move the archaeologist to the room (best next step) of the location of the archaeologist;
+			if the archaeologist is visible, say "The archaeologist arrives from [if best next step is up]below[otherwise if best next step is down]above[otherwise][the best next step][end if].";
 		otherwise if the best next step is a thing:
-			if the archeologist is visible, say "The archeologist takes a picture of [the best next step].";
+			if the archaeologist is visible, say "The archaeologist takes a picture of [the best next step].";
 			now the best next step is photographed.
 
 To decide what number is alpha-beta (node-locs - list of objects) ' (node-treasures - list of objects) ' (node-carried-keys - list of objects) ' (node-uncarried-keys - list of objects) ' (depth - number) ' (alpha - number) ' (beta - number) ' true:
