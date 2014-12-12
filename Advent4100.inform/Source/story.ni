@@ -569,5 +569,6 @@ When play begins:
 	repeat with X running through treasures:
 		increase the maximum score by the score of X.
 
-Before taking a not handled treasure (called X):
-	increase the score by the score of X.
+After taking a not handled treasure (called X):
+	increase the score by the score of X;
+	if the score is the maximum score, end the story finally saying "You have won".
