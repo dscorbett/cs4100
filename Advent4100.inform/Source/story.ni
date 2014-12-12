@@ -15,25 +15,33 @@ A room can be placeable.
 There are 20 placeable rooms.
 
 A treasure is a kind of thing.
-A treasure has a number called the score. The score of a treasure is usually 5.
-A sapphire, an emerald, a pearl, a coin, a painting, and a vase are treasures.
+A treasure has a number called the score. The score of a treasure is usually 400.
+A diamond, a silver bar, a golden egg, an ornate rug, a jeweled trident, a delicate vase, an egg-sized emerald, a platinum pyramid, a glistening pearl, and a magazine are treasures.
+The score of the ornate rug is 409.
+The score of the golden egg is 400.
+The score of the jeweled trident is 500.
+The score of the delicate vase is 500.
+The score of the egg-sized emerald is 530.
+The score of the platinum pyramid is 530.
+The score of the glistening pearl is 430.
+The score of the magazine is 1.
 
-The iron door is a lockable locked door, north of a room and south of a room.
-The iron key unlocks the iron door.
-The copper door is a lockable locked door, north of a room and south of a room.
-The copper key unlocks the copper door.
-The d1 door is a lockable locked door, north of a room and south of a room.
-The d1 key unlocks the d1 door.
-The d2 door is a lockable locked door, north of a room and south of a room.
-The d2 key unlocks the d2 door.
-The d3 door is a lockable locked door, north of a room and south of a room.
-The d3 key unlocks the d3 door.
-The d4 door is a lockable locked door, north of a room and south of a room.
-The d4 key unlocks the d4 door.
-The d5 door is a lockable locked door, north of a room and south of a room.
-The d5 key unlocks the d5 door.
-The d6 door is a lockable locked door, north of a room and south of a room.
-The d6 key unlocks the d6 door.
+The steel grate is a lockable locked door, north of a room and south of a room.
+The steel key unlocks the steel grate.
+The wooden door is a lockable locked door, north of a room and south of a room.
+The softly humming key unlocks the wooden door.
+The crystalline door is a lockable locked door, north of a room and south of a room.
+The rusty black key unlocks the crystalline door.
+The fluorescent door is a lockable locked door, north of a room and south of a room.
+The fancy key unlocks the fluorescent door.
+The pneumatic door is a lockable locked door, north of a room and south of a room.
+The key card unlocks the pneumatic door.
+The little door is a lockable locked door, north of a room and south of a room.
+The little key unlocks the little door.
+The blood-stained door is a lockable locked door, north of a room and south of a room.
+The red key unlocks the blood-stained door.
+The silver door is a lockable locked door, north of a room and south of a room.
+The tarnished key unlocks the silver door.
 
 Section - New properties
 
