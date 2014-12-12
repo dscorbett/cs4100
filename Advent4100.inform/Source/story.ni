@@ -1,5 +1,6 @@
 "Adventure 4100" by David Corbett
 
+Include version 4/140513 of Automap by Mark Tilford.
 Include Mobile Doors by David Corbett.
 
 Use American dialect.
@@ -7,10 +8,6 @@ Use dynamic memory allocation of at least 16384.
 Use no deprecated features.
 Use scoring.
 Use serial comma.
-
-Section - Not for release (not for release)
-
-Include version 4/140513 of Automap by Mark Tilford.
 
 Section - Stocks
 
@@ -49,9 +46,11 @@ A room has a number called the index.
 
 A thing can be placeable or unplaceable. A thing is usually placeable.
 
+The verb to key-match means the matching key property.
+
 Section - Auxiliary phrases
 
-The description of a room is usually "([x of location],[y of location],[z of location]) Zone [zone of location]. You can go [exit list].".
+The description of a room is usually "You can go [exit list].".
 To say exit list:
 	let L be a list of directions;
 	repeat with D running through directions:
@@ -59,7 +58,7 @@ To say exit list:
 	say L.
 
 Rule for printing the name of a room (called R):
-	say "Room [code of R]";
+	say "Room [code of R]".
 
 To decide what number is the code of (O - object):
 	(- {O} -).
@@ -71,39 +70,36 @@ To decide what direction is a fun direction:
 			-- 2: decide on east;
 			-- 3: decide on south;
 			-- otherwise: decide on west;
-	decide on down;
+	decide on down.
 
 To decide what number is the x (D - direction) of (R - room):
 	if D is north:
-		decide on x of R + 1;
+		decide on the x of R + 1;
 	if D is south:
-		decide on x of R - 1;
+		decide on the x of R - 1;
 	otherwise:
-		decide on x of R;
+		decide on the x of R.
 
 To decide what number is the y (D - direction) of (R - room):
 	if D is east:
-		decide on y of R + 1;
+		decide on the y of R + 1;
 	if D is west:
-		decide on y of R - 1;
+		decide on the y of R - 1;
 	otherwise:
-		decide on y of R;
+		decide on the y of R.
 
 To decide what number is the z (D - direction) of (R - room):
 	if D is up:
-		decide on z of R + 1;
+		decide on the z of R + 1;
 	if D is down:
-		decide on z of R - 1;
+		decide on the z of R - 1;
 	otherwise:
-		decide on z of R;
+		decide on the z of R;
 
 To decide whether the space at (x - number) by (y - number) by (z - number) is free:
 	repeat with R running through placed rooms:
 		if x of R is x and y of R is y and z of R is z, no;
-	yes;
-
-To decide what number is the Manhattan distance between (R1 - a room) and (R2 - a room):
-	decide on the absolute value of (x of R1 - x of R2) + the absolute value of (y of R1 - y of R2) + the absolute value of (z of R1 - z of R2).
+	yes.
 
 Section - Absolute value (for Z-Machine only)
 
@@ -115,47 +111,35 @@ Section - The initial room tree
 
 When play begins:
 	while there is an unplaced placeable room (called branch):
-[		say line break;]
-[		showme the branch;]
 		let root be a random placed room;
-[		showme the root;]
 		if root is nothing:
 			now branch is placed;
 		otherwise:
 			let D be a fun direction;
-[			showme D;]
 			let x be x D of root;
 			let y be y D of root;
 			let z be z D of root;
 			if the space at x by y by z is free:
 				now branch is placed;
-[				say "free!";]
 				now x of branch is x;
 				now y of branch is y;
 				now z of branch is z;
 				now precursor of branch is root;
 				change the D exit of root to branch;
-				say "[root] -> [D] -> [branch].";
-				change opposite of D exit of branch to root;
-				say "[branch] -> [opposite of D] -> [root].";
-[			otherwise:]
-[				say "not free.";]
+				change opposite of D exit of branch to root.
 
 True adjacency relates rooms to each other.
 The verb to be truly adjacent to means the true adjacency relation.
 
 When play begins:
 	repeat with R running through placeable rooms:
-		say "[code of R]: ([x of R],[y of R],[z of R])[line break]";
 		repeat with D running through directions:
 			let R2 be room D from R;
 			if R2 is not nothing:
-				now R is truly adjacent to R2;
-				say " . [D] -> [code of R2][line break]";
+				now R is truly adjacent to R2.
 
 Definition: A room is root if it is placed and its precursor is nothing.
 
-[TODO: Does this do anything?]
 When play begins:
 	let the queue be a list of rooms;
 	let R be a random root room;
@@ -173,11 +157,14 @@ When play begins:
 Section - The constraint satisfaction solver
 
 A thing has a list of numbers called the ages.
+
 When play begins:
 	let N be the number of placed rooms;
 	repeat with X running through placeable things:
 		extend the ages of X to N entries.
+
 Definition: a thing is unset if it has not been set.
+
 To decide whether (X - a thing) has not been set:
 	let C be 0;
 	repeat with A running through the ages of X:
@@ -214,37 +201,8 @@ To decide what number is the newly assigned index of (X - a thing):
 			now entry I in the ages of X is -1;
 	decide on the index.
 
-[To decide whether we remove inconsistent values from (X1 - a thing) given (X2 - a thing):
-	let removed be false;
-	repeat with I1 running from 1 to the number of entries in placed-rooms:
-		if entry I1 in the ages of X1 is -1, next;
-		let satisfiable be false;
-		repeat with I2 running from 1 to the number of entries in placed-rooms:
-			if entry I2 in the ages of X2 is -1, next;
-			if we can put X1 in entry I1 in placed-rooms and X2 in entry I2 in placed-rooms:
-				now satisfiable is true;
-				break;
-		if satisfiable is false:
-			now entry I1 in the ages of X1 is -1;
-			now removed is true;
-	decide on removed.
-To run AC-3:
-	let the queue be a list of things;
-	repeat with X1 running through things:
-		repeat with X2 running through things constrained by X1:
-			add X1 to the queue;
-			add X2 to the queue;
-	while the queue is non-empty:
-		let X1 be entry 1 in the queue;
-		let X2 be entry 2 in the queue;
-		remove entry 1 from the queue;
-		remove entry 1 from the queue;
-		if we remove inconsistent values from X1 given X2:
-			repeat with X3 running through things constrained by X1:
-				add X3 to the queue;
-				add X1 to the queue.]
-
 Placed-rooms is a list of rooms that varies.
+
 When play begins:
 	now placed-rooms is the list of placed rooms;
 	sort placed-rooms in index order;
@@ -273,11 +231,10 @@ When play begins:
 				if X1 is X, next;
 				repeat with I1 running from 1 to the number of entries in placed-rooms:
 					unless entry I1 in the ages of X1 is 0:
-						decrement entry I1 in the ages of X1;
+						decrement entry I1 in the ages of X1.
 
 When play begins:
 	repeat with X running through placeable things:
-		say "[X]: ([ages of X in brace notation]) ";
 		let current-index be 0;
 		repeat with I running from 1 to the number of entries in the ages of X:
 			if entry I in the ages of X is 0:
@@ -287,34 +244,38 @@ When play begins:
 					now current-index is 0;
 					break;
 		if current-index is 0:
-			say "********* ERROR!";
 			next;
 		let R be entry current-index in placed-rooms;
-		say "<<[current-index]>>: [R].";
 		if X is a door:
 			let D be the best route from R to the precursor of R;
 			unless D is nothing:
 				move X to D of R and (the opposite of D) of the precursor of R;
 		otherwise:
-			[TODO: Make sure the player starts in the first zone.]
-			if X is yourself, next; [say run paragraph on;]
 			move X to R, without printing a room description.
 
 Section - Attacking
 
 Attacking it with is an action applying to one visible thing and one carried thing.
 Understand "attack [something] with [something]" as attacking it with.
+
 Check an actor attacking something with:
 	try the actor attacking the noun.
 
-Section - Agents
+Instead of attacking the dwarf:
+	if the axe is carried:
+		try throwing the axe at the dwarf instead.
+
+Section - The dwarf
 
 The dwarf is a man. The description of the dwarf is "This little guy is a reflex agent. If he sees you, he reflexively tries to kill you."
+
 The dwarf can be hidden. The dwarf is hidden.
-The axe is an unplaceable thing. The axe is nowhere. The description of the axe is "It's just a little axe.".
+
+The axe is an unplaceable thing. The axe is nowhere. The description of the axe is "It's just a little axe."
+
 Definition: a room is non-location if it is not the location.
+
 Every turn:
-[	say "dwarf's turn: dwarf was in [location of dwarf] ([x of location of dwarf],[y of location of dwarf],[z of location of dwarf]).";]
 	if the dwarf is in a room (called R):
 		if R is the location:
 			if the dwarf is hidden:
@@ -341,45 +302,47 @@ Every turn:
 			let W be the best direction from the location to R;
 			say "The dwarf arrives from [if W is up]above[otherwise if W is down]below[otherwise][the W][end if].";
 			now the dwarf is not hidden.
-[Every turn:
-	say "dwarf's turn: dwarf is now in [location of dwarf] ([x of location of dwarf],[y of location of dwarf],[z of location of dwarf])."]
+
 Instead of attacking the dwarf:
 	say "Not with your bare hands."
+
 Instead of attacking the dwarf with the axe:
 	try throwing the axe at the dwarf.
+
 Instead of throwing the axe at the dwarf:
 	say "You throw the axe at the dwarf and the spinning blade hits with a satisfying squelch! The body vanishes in a cloud of greasy black smoke.";
 	now the axe is in the location;
 	now the dwarf is nowhere.
+
 Rule for writing a paragraph about the hidden dwarf:
 	now the dwarf is mentioned.
 
+Section - The archeologist
+
 The archeologist is a man. The description of the archeologist is "The archeologist carries a camera[if the player carries a treasure]. He looks disapprovingly at the treasure you have looted[end if].".
-The verb to key-match means the matching key property.
+
 A treasure can be photographed.
+
 The best next step list is a list of objects variable.
 The best next step score is a number variable.
 The initial depth is always 2.
+
 Every turn:
-[	showme the children of the location ' the list of not handled not photographed treasures ' the list of carried things which are key-matched by locked doors ' the list of not carried things which are key-matched by locked doors;]
 	now the best next step list is {};
 	now the best next step score is 0;
 	let node-locs be a list of rooms;
 	add the location to node-locs;
 	add the location of the archeologist to node-locs;
 	let N be alpha-beta node-locs ' the list of not handled not photographed treasures ' the list of carried things which are key-matched by locked doors ' the list of not carried things which are key-matched by locked doors ' the initial depth ' -32768 ' 32767 ' false;
-	say "archeologist's turn: [best next step list in brace notation] ~ [best next step score].";
 	if the best next step list is non-empty:
 		sort the best next step list in random order;
 		let the best next step be entry 1 in the best next step list;
 		if the best next step is a direction:
-			[if the archeologist is visible,]
-			say "The archeologist goes [best next step].";
+			if the archeologist is visible, say "The archeologist goes [best next step].";
 			move the archeologist to the room (best next step) of the location of the archeologist;
 			if the archeologist is visible, say "The archeologist arrives from [if best next step is up]below[otherwise if best next step is down]above[otherwise][the best next step][end if].";
 		otherwise if the best next step is a thing:
-			[if the archeologist is visible,]
-			say "The archeologist takes a picture of [the best next step].";
+			if the archeologist is visible, say "The archeologist takes a picture of [the best next step].";
 			now the best next step is photographed.
 
 To decide what number is alpha-beta (node-locs - list of objects) ' (node-treasures - list of objects) ' (node-carried-keys - list of objects) ' (node-uncarried-keys - list of objects) ' (depth - number) ' (alpha - number) ' (beta - number) ' true:
@@ -415,12 +378,7 @@ To decide what number is alpha-beta (node-locs - list of objects) ' (node-treasu
 	decide on beta.
 
 To decide what list of lists of lists of objects is the children of (node-locs - list of objects) ' (node-treasures - list of objects) ' (node-carried-keys - list of objects) ' (node-uncarried-keys - list of objects) ' true:
-[	showme node-locs;
-	showme node-treasures;
-	showme node-carried-keys;
-	showme node-uncarried-keys;]
 	let the children be a list of lists of lists of objects;
-[		say "go direction.";]
 	repeat with X running through directions:
 		let RD be the room-or-door X from entry 1 in node-locs;
 		if RD is not nothing and (RD is not a door or (the matching key of RD is not listed in node-carried-keys and the matching key of RD is not listed in node-uncarried-keys)):
@@ -433,8 +391,6 @@ To decide what list of lists of lists of objects is the children of (node-locs -
 			add node-carried-keys to L;
 			add node-uncarried-keys to L;
 			add L to the children;
-[				showme L;]
-[		say "get treasure.";]
 	repeat with X running through node-treasures:
 		if X is in entry 1 in node-locs:
 			[get treasure]
@@ -446,8 +402,6 @@ To decide what list of lists of lists of objects is the children of (node-locs -
 			add node-carried-keys to L;
 			add node-uncarried-keys to L;
 			add L to the children;
-[				showme L;]
-[		say "unlock door.";]
 	repeat with X running through node-carried-keys:
 		if X unlocks a door in entry 1 in node-locs:
 			[unlock door]
@@ -459,13 +413,9 @@ To decide what list of lists of lists of objects is the children of (node-locs -
 			add L1 to L;
 			add node-uncarried-keys to L;
 			add L to the children;
-[				showme L;]
-[		say "get keys.";]
 	[get all keys]
 	let L be a list of lists of objects;
-	let L1 be a list of objects;
-	add entry 1 in node-locs to L1;
-	add L1 to L;
+	add node-locs to L;
 	add node-treasures to L;
 	let L1 be node-carried-keys;
 	let L2 be node-uncarried-keys;
@@ -479,7 +429,6 @@ To decide what list of lists of lists of objects is the children of (node-locs -
 		add L1 to L;
 		add L2 to L;
 		add L to the children;
-[		say line break;]
 	decide on the children.
 
 To decide what list of lists of lists of objects is the children of (node-locs - list of object) ' (node-treasures - list of objects) ' (node-carried-keys - list of objects) ' (node-uncarried-keys - list of objects) ' false:
@@ -523,9 +472,10 @@ To decide what list of lists of lists of objects is the children of (node-locs -
 	add L to the children;]
 	decide on the children.
 
-Section - Zones
+Section - Zones and tunneling
 
 A room has a number called the zone.
+
 The verb to follow means the precursor property.
 
 To decide what direction is the best direction from (R1 - a room) to (R2 - a room):
@@ -549,9 +499,7 @@ To tunnel from (R1 - a room) to (R2 - a room):
 	if R1 is R2 or the best route from R1 to R2, using even locked doors is nothing:
 		stop;
 	let W1 be the best direction from R1 to R2;
-	say "best [R1] -> [R2]: [W1].";
 	if the room W1 from R1 is nothing and the room (opposite of W1) from R2 is nothing:
-		say "change!";
 		change the W1 exit of R1 to R2;
 		change the (opposite of W1) exit of R2 to R1.
 
@@ -599,19 +547,14 @@ When play begins:
 				otherwise:
 					add R2 to the root queue.
 
-[When play begins:
-	let L be the list of placeable rooms;
-	sort L in zone order;
-	repeat with R running through L:
-		say "Zone [zone of R]: [R] ([x of R],[y of R],[z of R])[line break]"]
-
-Section - Mapping (for use with Automap by Mark Tilford)
+Section - Mapping
 
 Automapping is an action out of world applying to nothing.
 Understand "automap" as automapping.
+
 Carry out automapping:
 	say "Opening all doors and mapping the dungeon.";
-	reserve automap memory of 13 rows;
+	reserve automap memory of (the number of placeable rooms * 2 / 3) rows;
 	repeat with D running through doors:
 		now D is unlocked;
 		now D is open;
@@ -626,11 +569,3 @@ When play begins:
 
 Before taking a not handled treasure (called X):
 	increase the score by the score of X.
-
-Section - Randomness
-
-Seeding is an action out of world applying to one number.
-Understand "seed the/-- random/random-number/-- number/-- generator/-- with/-- [number]" as seeding.
-Carry out seeding:
-	say "Seeding the random-number generator with [number understood].";
-	seed the random-number generator with the number understood.
