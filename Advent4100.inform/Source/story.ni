@@ -51,14 +51,34 @@ The verb to key-match means the matching key property.
 Section - Auxiliary phrases
 
 The description of a room is usually "You can go [exit list].".
-To say exit list:
+To decide what list of directions is the exit list:
 	let L be a list of directions;
 	repeat with D running through directions:
 		if the room D from the location is a room, add D to L;
-	say L.
+	decide on L.
 
 Rule for printing the name of a room (called R):
-	say "Room [code of R]".
+	let L be the exit list;
+	let the connectivity be the number of entries in L;
+	if the connectivity is:
+		-- 1:
+			if entry 1 in L is:
+				-- up: say "Hole";
+				-- down: say "Dome";
+				-- otherwise: say "Cul-de-Sac";
+		-- 2:
+			let D1 be entry 1 in L;
+			let D2 be entry 2 in L;
+			if D1 is the opposite of D2:
+				if D1 is up or D1 is down:
+					say "Shaft";
+				otherwise:
+					say "[D1]-[D2] Tunnel" in title case;
+			otherwise:
+				say "Twisty Passage";
+		-- otherwise:
+			say "Complex Junction";
+	say " (Y[the code of R - the code of the default value of rooms + 1])".
 
 Rule for printing the name of a door (called D) while looking:
 	say "[printed name of D] ([if D is locked]locked, [end if]leading [opposite of the direction of D from the location])".
