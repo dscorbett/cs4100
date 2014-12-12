@@ -3,6 +3,7 @@
 Include Mobile Doors by David Corbett.
 
 Use American dialect.
+Use dynamic memory allocation of at least 16384.
 Use no deprecated features.
 Use scoring.
 Use serial comma.
@@ -310,7 +311,8 @@ Section - Agents
 
 The dwarf is a man. The description of the dwarf is "This little guy is a reflex agent. If he sees you, he reflexively tries to kill you."
 The dwarf can be hidden. The dwarf is hidden.
-The axe is an unplaceable thing. The axe is nowhere. The description of the axe is "It's just a little axe."
+The axe is an unplaceable thing. The axe is nowhere. The description of the axe is "It's just a little axe.".
+Definition: a room is non-location if it is not the location.
 Every turn:
 [	say "dwarf's turn: dwarf was in [location of dwarf] ([x of location of dwarf],[y of location of dwarf],[z of location of dwarf]).";]
 	if the dwarf is in a room (called R):
@@ -330,10 +332,11 @@ Every turn:
 				otherwise:
 					say "but misses![paragraph break]Shrieking with frustration, the dwarf slips back into the shadows.";
 		now the dwarf is hidden;
-		if R is truly adjacent to the location and a random chance of 1 in 2 succeeds:
+		if the best route from R to the location is not nothing and a random chance of 1 in 4 succeeds:
 			now the dwarf is in the location;
 		otherwise:
-			now the dwarf is in a random room which is truly adjacent to R;
+			let R1 be a random non-location room which is truly adjacent to R;
+			if the best route from R to R1 is not nothing, now the dwarf is in R;
 		if the dwarf is visible:
 			let W be the best direction from the location to R;
 			say "The dwarf arrives from [if W is up]above[otherwise if W is down]below[otherwise][the W][end if].";
@@ -351,7 +354,174 @@ Instead of throwing the axe at the dwarf:
 Rule for writing a paragraph about the hidden dwarf:
 	now the dwarf is mentioned.
 
-The thief is a man. The description of the thief is "He looks like a thief."
+The archeologist is a man. The description of the archeologist is "The archeologist carries a camera[if the player carries a treasure]. He looks disapprovingly at the treasure you have looted[end if].".
+The verb to key-match means the matching key property.
+A treasure can be photographed.
+The best next step list is a list of objects variable.
+The best next step score is a number variable.
+The initial depth is always 2.
+Every turn:
+[	showme the children of the location ' the list of not handled not photographed treasures ' the list of carried things which are key-matched by locked doors ' the list of not carried things which are key-matched by locked doors;]
+	now the best next step list is {};
+	now the best next step score is 0;
+	let node-locs be a list of rooms;
+	add the location to node-locs;
+	add the location of the archeologist to node-locs;
+	let N be alpha-beta node-locs ' the list of not handled not photographed treasures ' the list of carried things which are key-matched by locked doors ' the list of not carried things which are key-matched by locked doors ' the initial depth ' -32768 ' 32767 ' false;
+	say "archeologist's turn: [best next step list in brace notation] ~ [best next step score].";
+	if the best next step list is non-empty:
+		sort the best next step list in random order;
+		let the best next step be entry 1 in the best next step list;
+		if the best next step is a direction:
+			[if the archeologist is visible,]
+			say "The archeologist goes [best next step].";
+			move the archeologist to the room (best next step) of the location of the archeologist;
+			if the archeologist is visible, say "The archeologist arrives from [if best next step is up]below[otherwise if best next step is down]above[otherwise][the best next step][end if].";
+		otherwise if the best next step is a thing:
+			[if the archeologist is visible,]
+			say "The archeologist takes a picture of [the best next step].";
+			now the best next step is photographed.
+
+To decide what number is alpha-beta (node-locs - list of objects) ' (node-treasures - list of objects) ' (node-carried-keys - list of objects) ' (node-uncarried-keys - list of objects) ' (depth - number) ' (alpha - number) ' (beta - number) ' true:
+	if depth is 0 or node-treasures is empty:
+		decide on the number of entries in node-treasures;
+	repeat with L running through the children of node-locs ' node-treasures ' node-carried-keys ' node-uncarried-keys ' true:
+		let alpha-prime be alpha-beta entry 1 of L ' entry 2 of L ' entry 3 of L ' entry 4 of L ' depth - 1 ' alpha ' beta ' false;
+		if alpha-prime > alpha, now alpha is alpha-prime;
+		if beta <= alpha, break;
+	decide on alpha.
+
+To decide what number is alpha-beta (node-locs - list of objects) ' (node-treasures - list of objects) ' (node-carried-keys - list of objects) ' (node-uncarried-keys - list of objects) ' (depth - number) ' (alpha - number) ' (beta - number) ' false:
+	if depth is 0 or node-treasures is empty:
+		let the heuristic be 0;
+		repeat with X running through treasures:
+			if X is listed in node-treasures:
+				let N be the number of moves from entry 2 in node-locs to the location of X, using even locked doors;
+				unless N is -1, increase the heuristic by N;
+			otherwise:
+				decrease the heuristic by the number of placeable rooms;
+		decide on the heuristic;
+	repeat with L running through the children of node-locs ' node-treasures ' node-carried-keys ' node-uncarried-keys ' false:
+		let beta-prime be alpha-beta entry 1 of L ' entry 2 of L ' entry 3 of L ' entry 4 of L ' depth - 1 ' alpha ' beta ' true;
+		if beta-prime < beta:
+			now beta is beta-prime;
+		if beta <= alpha, break;
+		if depth is the initial depth:
+			if beta < best next step score:
+				now the best next step score is beta;
+				now the best next step list is entry 5 of L;
+			otherwise:
+				add entry 1 of entry 5 of L to the best next step list;
+	decide on beta.
+
+To decide what list of lists of lists of objects is the children of (node-locs - list of objects) ' (node-treasures - list of objects) ' (node-carried-keys - list of objects) ' (node-uncarried-keys - list of objects) ' true:
+[	showme node-locs;
+	showme node-treasures;
+	showme node-carried-keys;
+	showme node-uncarried-keys;]
+	let the children be a list of lists of lists of objects;
+[		say "go direction.";]
+	repeat with X running through directions:
+		let RD be the room-or-door X from entry 1 in node-locs;
+		if RD is not nothing and (RD is not a door or (the matching key of RD is not listed in node-carried-keys and the matching key of RD is not listed in node-uncarried-keys)):
+			[go direction]
+			let L be a list of lists of objects;
+			let L1 be node-locs;
+			now entry 1 in L1 is the room X from (entry 1 in node-locs);
+			add L1 to L;
+			add node-treasures to L;
+			add node-carried-keys to L;
+			add node-uncarried-keys to L;
+			add L to the children;
+[				showme L;]
+[		say "get treasure.";]
+	repeat with X running through node-treasures:
+		if X is in entry 1 in node-locs:
+			[get treasure]
+			let L be a list of lists of objects;
+			add node-locs to L;
+			let L1 be node-treasures;
+			remove X from L1;
+			add L1 to L;
+			add node-carried-keys to L;
+			add node-uncarried-keys to L;
+			add L to the children;
+[				showme L;]
+[		say "unlock door.";]
+	repeat with X running through node-carried-keys:
+		if X unlocks a door in entry 1 in node-locs:
+			[unlock door]
+			let L be a list of lists of objects;
+			add node-locs to L;
+			add node-treasures to L;
+			let L1 be node-carried-keys;
+			remove X from L1;
+			add L1 to L;
+			add node-uncarried-keys to L;
+			add L to the children;
+[				showme L;]
+[		say "get keys.";]
+	[get all keys]
+	let L be a list of lists of objects;
+	let L1 be a list of objects;
+	add entry 1 in node-locs to L1;
+	add L1 to L;
+	add node-treasures to L;
+	let L1 be node-carried-keys;
+	let L2 be node-uncarried-keys;
+	let Z be false;
+	repeat with X running through node-uncarried-keys:
+		if X is in entry 1 in node-locs:
+			add X to L1;
+			remove X from L2;
+			now Z is true;
+	if Z is true:
+		add L1 to L;
+		add L2 to L;
+		add L to the children;
+[		say line break;]
+	decide on the children.
+
+To decide what list of lists of lists of objects is the children of (node-locs - list of object) ' (node-treasures - list of objects) ' (node-carried-keys - list of objects) ' (node-uncarried-keys - list of objects) ' false:
+	let the children be a list of lists of lists of objects;
+	repeat with D running through directions:
+		let RD be the room-or-door D from entry 2 in node-locs;
+		if RD is not nothing and (RD is not a door or (the matching key of RD is not listed in node-carried-keys and the matching key of RD is not listed in node-uncarried-keys)):
+			[go direction]
+			let L be a list of lists of objects;
+			let L1 be node-locs;
+			now entry 2 in L1 is the room D from (entry 2 in node-locs);
+			add L1 to L;
+			add node-treasures to L;
+			add node-carried-keys to L;
+			add node-uncarried-keys to L;
+			now L1 is {};
+			add D to L1;
+			add L1 to L;
+			add L to the children;
+	repeat with X running through node-treasures:
+		if X is in entry 2 in node-locs:
+			[photograph treasure]
+			let L be a list of lists of objects;
+			add node-locs to L;
+			let L1 be node-treasures;
+			remove X from L1;
+			add L1 to L;
+			add node-carried-keys to L;
+			add node-uncarried-keys to L;
+			now L1 is {};
+			add X to L1;
+			add L1 to L;
+			add L to the children;
+	[wait]
+[	let L be a list of lists of objects;
+	add node-locs to L;
+	add node-treasures to L;
+	add node-carried-keys to L;
+	add node-uncarried-keys to L;
+	add {nothing} to L;
+	add L to the children;]
+	decide on the children.
 
 Section - Zones
 
@@ -447,9 +617,6 @@ Carry out automapping:
 		now D is open;
 	repeat with R running through rooms:
 		explore R.
-
-When play begins:
-	try automapping.
 
 Section - Scoring
 
